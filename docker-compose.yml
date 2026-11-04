@@ -1,0 +1,101 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - go-mod:/go/pkg/mod
+      - go-build:/root/.cache/go-build
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uapp", "-papp"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    image: migrate/migrate:v4.18.3
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: ["migrate", "-path", "/migrations", "-database", "mysql://app:app@tcp(db:3306)/app?multiStatements=true"]
+    command: ["up"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  loki:
+    image: grafana/loki:3.5.0
+    ports:
+      - "3100:3100"
+
+  alloy:
+    image: grafana/alloy:v1.10.0
+    command: ["run", "/etc/alloy/config.alloy"]
+    volumes:
+      - ./alloy.config:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - loki
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    ports:
+      - "9090:9090"
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:12.1.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    configs:
+      - source: grafana-datasources
+        target: /etc/grafana/provisioning/datasources/loki.yaml
+    depends_on:
+      - loki
+      - prometheus
+
+configs:
+  grafana-datasources:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Loki
+          type: loki
+          url: http://loki:3100
+          isDefault: true
+        - name: Prometheus
+          type: prometheus
+          url: http://prometheus:9090
+  prometheus-config:
+    content: |
+      global:
+        scrape_interval: 15s
+      scrape_configs:
+        - job_name: app
+          static_configs:
+            - targets: ["app:8080"]
+
+volumes:
+  go-mod:
+  go-build:
+  db-data:
