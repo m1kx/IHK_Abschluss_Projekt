@@ -29,7 +29,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer database.Close()
+	err = database.Close()
+	if err != nil {
+		return err
+	}
 
 	for team := range cfg.Get().Application.Instances {
 		metrics.InitTeam(team)
