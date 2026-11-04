@@ -5,3 +5,8 @@ tasks:
     desc: Run with live reload (air in docker compose)
     cmds:
       - docker compose up --build
+
+  test:
+    desc: Run unit tests
+    cmds:
+      - go test ./...
