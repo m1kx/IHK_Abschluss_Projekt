@@ -2,6 +2,6 @@ version: "3"
 
 tasks:
   dev:
-    desc: Run with live reload (air)
+    desc: Run with live reload (air in docker compose)
     cmds:
-      - air -c .air.toml
+      - docker compose up --build
