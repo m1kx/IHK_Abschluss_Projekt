@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	Server   Server   `mapstructure:"server"`
-	Database Database `mapstructure:"database"`
+	Server      Server      `mapstructure:"server"`
+	Database    Database    `mapstructure:"database"`
+	Application Application `mapstructure:"application"`
 }
 
 type Server struct {
@@ -17,6 +18,15 @@ type Server struct {
 
 type Database struct {
 	DSN string `mapstructure:"dsn"`
+}
+
+type Application struct {
+	Instances map[string]InstanceConfig `mapstructure:"instances"`
+}
+
+// instance config is set per team
+type InstanceConfig struct {
+	DisplayName string `mapstructure:"display_name"`
 }
 
 type Service struct {

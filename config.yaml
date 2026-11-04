@@ -2,3 +2,7 @@ server:
   addr: ":8080"
 database:
   dsn: "app:app@tcp(db:3306)/app?parseTime=true"
+application:
+  instances:
+    test_a:
+      display_name: "a - team"
