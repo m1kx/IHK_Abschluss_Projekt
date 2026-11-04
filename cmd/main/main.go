@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/m1kx/IHK_Abschluss_Projekt/internal/config"
+	"github.com/m1kx/IHK_Abschluss_Projekt/internal/db"
 )
 
 func main() {
@@ -18,5 +19,12 @@ func run() error {
 		return err
 	}
 	log.Printf("config loaded: %+v", cfg.Get())
+
+	database, err := db.New(cfg.Get().Database.DSN)
+	if err != nil {
+		return err
+	}
+	defer database.Close()
+	log.Print("database connected")
 	return nil
 }

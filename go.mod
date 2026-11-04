@@ -2,9 +2,13 @@ module github.com/m1kx/IHK_Abschluss_Projekt
 
 go 1.27.0
 
-require github.com/spf13/viper v1.21.0
+require (
+	github.com/go-sql-driver/mysql v1.10.1
+	github.com/spf13/viper v1.21.0
+)
 
 require (
+	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect

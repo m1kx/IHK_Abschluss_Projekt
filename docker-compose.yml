@@ -5,7 +5,37 @@ services:
       - .:/app
       - go-mod:/go/pkg/mod
       - go-build:/root/.cache/go-build
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uapp", "-papp"]
+      interval: 2s
+      retries: 30
+
+  migrate:
+    image: migrate/migrate:v4.18.3
+    volumes:
+      - ./migrations:/migrations
+    entrypoint: ["migrate", "-path", "/migrations", "-database", "mysql://app:app@tcp(db:3306)/app?multiStatements=true"]
+    command: ["up"]
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   go-mod:
   go-build:
+  db-data:

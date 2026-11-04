@@ -7,11 +7,16 @@ import (
 )
 
 type Config struct {
-	Server Server `mapstructure:"server"`
+	Server   Server   `mapstructure:"server"`
+	Database Database `mapstructure:"database"`
 }
 
 type Server struct {
 	Addr string `mapstructure:"addr"`
+}
+
+type Database struct {
+	DSN string `mapstructure:"dsn"`
 }
 
 type Service struct {
